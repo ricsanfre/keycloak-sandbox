@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HTTP_PORT=808
+HTTP_PORT=8080
 
 function get_oidc_server_infos {
     curl -sS $OPENID_ENDPOINT | jq $FIELD -r
@@ -148,8 +148,7 @@ function implicit_grant {
 function authorization_code_grant {
 
   if [ ! -z "$PKCE" ] ; then
-    echo "Generating PKCE CODES"
-    echo "--------------------"
+    echo "-- Generating PKCE CODES"
     gen_pkce_codes
   fi
 
@@ -226,7 +225,7 @@ function auth_code {
     [[ "$ADD_STATE" == 'true' ]] && args+=(--data state="$STATE")
     [[ "$ADD_NONCE" == 'true' ]] && args+=(--data nonce="$NONCE")
     [[ "$PKCE" == 'true' ]] && args+=(--data code_verifier="$VERIFIER")
-    
+
     RESPONSE=$(curl -sS "${args[@]}" )
     echo "Auth code exchange response"
     echo "---------------------------"
@@ -281,7 +280,7 @@ function show_help {
 echo "PLEASE-OPEN.IT BASH CLIENT"
 echo "SYNOPSIS"
 echo ""
-echo "oidc-client.sh --operation OP --openid-endpoint [--authorization-endpoint --token-introspection-endpoint --token-endpoint --end-session-endpoint --device-authorization-endpoint --userinfo-endpoint] --client-id --client-secret --username --password --scope --access-token --refresh-token --issuer --redirect-uri --authorization-code --device-code --acr --field "
+echo "oidc-client.sh --operation OP --openid-endpoint [--authorization-endpoint --token-introspection-endpoint --token-endpoint --end-session-endpoint --device-authorization-endpoint --userinfo-endpoint] --client-id --client-secret --username --password --scope --access-token --refresh-token --issuer --redirect-uri --authorization-code --device-code --acr --field --enable-pkce "
 
 
 
@@ -306,8 +305,9 @@ echo "    device_code"
 echo "    poll_token"
 echo ""
 echo " --field : filter for JQ"
-echo "  :--redirect-http-port open a port and listen for a redirect"
+echo " --redirect-http-port : open a port and listen for a redirect"
 echo " --random-redirect-http-port : open a random port and listen for a redirect"
+echo " --enable-pkce: to use PKCE authorization code flow"
 
 echo ""
 echo "More : "
@@ -378,10 +378,10 @@ while (( "$#" )); do
       kill $!;
       shift
       ;;
-    --pkce-enable)
+    --enable-pkce)
       PKCE=true
       shift
-      ;;  
+      ;;
     --token-endpoint)
       if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
         TOKEN_ENDPOINT=$2
